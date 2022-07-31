@@ -1,17 +1,25 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@4.1
 
-# commands:
-# destroy-environment:
-#   description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-#   parameters:
-#     # Add parameter here
-#   steps:
-#     - run:
-#         name: Destroy environments
-#         when: on_fail
-#         command: |
-#           # Your code here
-#           exit 1
+commands:
+  destroy-environment:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      id:
+        type: string
+    steps:
+      - run:
+          name: Destroy udapeople backend cfn stack
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.id >>
+      - run:
+          name: Destroy udapeople frontend cfn stack and S3 Bucket
+          when: on_fail
+          command: |
+            aws S3 rm s3://udapeople-<< parameters.id >> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
 
 # revert-migrations:
 #   description: Revert the last migration if successfully run in the current workflow.
@@ -94,10 +102,10 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-    - checkout
-    - restore_cache:
-        keys: [frontend-build]
-    - run:
+      - checkout
+      - restore_cache:
+          keys: [frontend-build]
+      - run:
           name: Scan-Fronted (Audit) Frontend
           command: |
             cd frontend
@@ -108,16 +116,55 @@ jobs:
     docker:
       - image: circleci/node:13.8.0
     steps:
-    - checkout
-    - restore_cache:
-        keys: [backend-build]
-    - run:
+      - checkout
+      - restore_cache:
+          keys: [backend-build]
+      - run:
           name: Scan-backend (Audit) Backend
           command: |
             cd backend
             npm install
             npm audit fix --force
             # npm audit --audit-level=critical
+  deploy-infrastructure:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: install tar and gzip
+          command: yum install -y tar gzip
+      - run:
+          name: Ensure back-end infrastructure exists
+          command: |
+            aws cloudformation deploy \
+                --template-file .circleci/files/backend.yml \
+                --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+                --tags project=udapeople
+      - run:
+          name: Ensure front-end infrastructure exist
+          command: |
+            aws cloudformation deploy \
+                --template-file .circleci/files/frontend.yml \
+                --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+                --tags project=udapeople
+      - run:
+          name: Add back-end ip to ansible inventory
+          command: |
+            cd ./.circleci/ansible
+            aws ec2 describe-instances \
+            --query 'Reservations[*].Instances[*].PublicIpAddress' \
+            --filters "Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text >> inventory.txt
+            cat inventory.txt
+      - persist_to_workspace:
+          root: .
+          paths:
+            - project/.circleci/ansible/inventory.txt
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
@@ -132,4 +179,4 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-
+      - deploy-infrastructure

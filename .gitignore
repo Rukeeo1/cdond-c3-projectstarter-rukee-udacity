@@ -68,3 +68,6 @@ node_modules
 
 .env
 dist
+
+udacity.cer
+udacity-cloudformation-user.csv
