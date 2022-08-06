@@ -180,4 +180,4 @@ workflows:
       # - scan-frontend:
       #     requires: [build-frontend]
       - deploy-infrastructure:
-          requires: [scan-backend, scan-frontend]
+          # requires: [scan-backend, scan-frontend]
