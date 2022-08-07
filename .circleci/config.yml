@@ -163,7 +163,7 @@ jobs:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.10.5-alpine3.16
     steps:
       - checkout
       - add_ssh_keys:
@@ -174,6 +174,7 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update --no-cache tar gzip ansible
+            apk add --update openssh
             pip3 install --upgrade awscli
       - run:
           name: Configure server
