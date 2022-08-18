@@ -239,4 +239,4 @@ workflows:
       # - configure-infrastructure:
       #     requires: [deploy-infrastructure]
       - run-migrations:
-          requires: [configure-infrastructure]
+          # requires: [configure-infrastructure]
