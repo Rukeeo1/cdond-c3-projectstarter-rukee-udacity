@@ -282,6 +282,49 @@ jobs:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
+  smoke-test:
+    docker:
+      - image: ubuntu
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          working_directory: /tmp
+          command: |
+            apt install ansible
+            apk add --update --no-cache curl nodejs npm
+            pip install awscli
+      - run:
+          name: Backend smoke test.
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances \
+             --query 'Reservations[*].Instances[*].PublicIpAddress' \
+             --filters Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+             --output text)
+            export API_URL=http://${BACKEND_IP}:3030
+            sleep 30
+            if curl -s $API_URL/api/status | grep "ok"
+            then
+              return 0
+            else
+              return 1
+            fi
+      - run:
+          name: Frontend smoke test.
+          command: |
+            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-west-2.amazonaws.com/#/employees"
+            echo $URL
+            if curl -s ${URL} | grep "Welcome"
+            then
+              # Change this to 0 after the job fails
+              return 1
+            else
+              return 1
+            fi
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
@@ -306,4 +349,5 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
