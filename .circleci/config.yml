@@ -291,7 +291,7 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            apt install ansible
+            sudo apt install ansible
             apk add --update --no-cache curl nodejs npm
             pip install awscli
       - run:
