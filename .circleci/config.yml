@@ -217,10 +217,11 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-          at: .
+          # at: .
+          at: ~/
       - run:
           name: Install dependencies
-          working_directory: /tmp
+          # working_directory: /tmp
           command: |
             sudo apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -246,11 +247,11 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - persist_to_workspace:
-          # root: .
-          root: ~/
-          paths:
-            - frontend/dist
+      # - persist_to_workspace:
+      #     # root: .
+      #     root: ~/
+      #     paths:
+      #       - frontend/dist
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -269,26 +270,24 @@ jobs:
           at: ~/
       - run:
           name: Install dependencies
-          no_output_timeout: "10m"
+          # no_output_timeout: "10m"
           command: |
             apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
-            # cd backend
-            # npm i
-      - run:
-          name: Package backend
-          command: |
-            cd backend
-            pwd
-            echo "Checking current working directory ------$(pwd)"
-            npm install
-            npm run build
-            cd ..
-            # zip file
-            tar -C backend -czvf artifact.tar.gz .
-            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
-            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
-            echo "Contents of the inventory.txt file is ------$(cat inventory.txt)"
-            ansible-playbook -i inventory.txt deploy-backend.yml
+      # - run:
+      #     name: Package backend
+      #     command: |
+      #       cd backend
+      #       pwd
+      #       echo "Checking current working directory ------$(pwd)"
+      #       npm install
+      #       npm run build
+      #       cd ..
+      #       # zip file
+      #       tar -C backend -czvf artifact.tar.gz .
+      #       mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+      #       mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+      #       echo "Contents of the inventory.txt file is ------$(cat inventory.txt)"
+      #       ansible-playbook -i inventory.txt deploy-backend.yml
       - run:
           name: Deploy backend
           command: |
@@ -296,9 +295,16 @@ jobs:
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
             export TYPEORM_MIGRATIONS=./migrations/*.ts
 
+
+            cd backend
+            npm install
+            npm run build
+            cd ..
+            tar -C backend -czvf artifact.tar.gz .
+            mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
+            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
             cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is ------- $(cat inventory.txt)"
-            cat inventory.txt
+            echo "Contents of the inventory.txt file is ------$(cat inventory.txt)"
             ansible-playbook -i inventory.txt deploy-backend.yml
 
       - destroy-environment:
