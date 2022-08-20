@@ -194,8 +194,9 @@ jobs:
             echo TYPEORM_PORT=$TYPEORM_PORT >> backend/.env
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> backend/.env
             cat backend/.env
+
             # add env var stop ====>
-            ansible-playbook -i inventory.txt configure-server.yml
+
             cd .circleci/ansible
             cat inventory.txt
             echo "above should be an ip"
