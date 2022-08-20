@@ -267,8 +267,8 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            npm install
-            npm run build
+            sudo npm install
+            sudo npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp ./dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       # - persist_to_workspace:
@@ -318,18 +318,6 @@ jobs:
             echo "Contents of the inventory.txt file is ------$(cat inventory.txt)"
             ansible-playbook -i inventory.txt deploy-backend.yml
 
-
-            # cd backend
-            # npm install
-            # npm run build
-            # cd ..
-            # tar -C backend -czvf artifact.tar.gz .
-            # mkdir -p ~/project/.circleci/ansible/roles/deploy/files/
-            # mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
-            # cd .circleci/ansible
-            # echo "Contents of the inventory.txt file is ------$(cat inventory.txt)"
-            # ansible-playbook -i inventory.txt deploy-backend.yml
-
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
@@ -358,9 +346,11 @@ jobs:
             echo $API_URL
             if curl -s $API_URL/api/status | grep "ok"
             then
-              return 0
+              # return 0
+              exit 0
             else
-              return 1
+              # return 1
+              exit 1
             fi
       - run:
           name: Frontend smoke test.
@@ -370,9 +360,11 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
               # Change this to 0 after the job fails
-              return 1
+              # return 1
+              exit 1
             else
-              return 1
+              # return 1
+              exit 1
             fi
       # - destroy-environment:
       #     id: ${CIRCLE_WORKFLOW_ID:0:7}
