@@ -272,11 +272,15 @@ jobs:
           no_output_timeout: "10m"
           command: |
             apk add --update --no-cache tar gzip nodejs npm aws-cli ansible
-            cd backend
-            npm i
+            # cd backend
+            # npm i
       - run:
           name: Package backend
           command: |
+            cd backend
+            pwd
+            echo "Checking current working directory ------$(pwd)"
+            npm install
             npm run build
             cd ..
             # zip file
