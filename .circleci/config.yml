@@ -35,6 +35,15 @@ commands:
             npm install
             npm run build
             npm run migrations:revert
+  install_awscli:
+    description: Install AWS CLI v2
+    steps:
+      - run:
+          name: Install AWS CLI v2
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
 jobs:
   build-frontend:
     docker:
@@ -213,6 +222,7 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - install_awscli
       - restore_cache:
           keys: [backend-build]
       - run:
@@ -231,6 +241,8 @@ jobs:
               curl --header "content-length:0" -X POST https://keyvalue.immanuel.co/api/KeyVal/UpdateValue/3cg7aby9/migration_${CIRCLE_WORKFLOW_ID:0:7}/0
             fi
       - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
           id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-frontend:
