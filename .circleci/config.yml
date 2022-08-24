@@ -337,8 +337,9 @@ jobs:
           # working_directory: /tmp
           command: |
             # sudo apt install ansible
-            apk add --update --no-cache curl nodejs npm 
-            pip install awscli
+            apk add --update --no-cache curl nodejs npm
+            # pip install awscli
+            sudo -H pip install awscli --upgrade --ignore-installed six
       - run:
           name: Backend smoke test.
           command: |
