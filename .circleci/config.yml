@@ -332,14 +332,15 @@ jobs:
       - image: python:3.7-alpine3.16
     steps:
       - checkout
+      - install_awscli
       - run:
           name: Install dependencies
           # working_directory: /tmp
           command: |
             # sudo apt install ansible
             apk add --update --no-cache curl nodejs npm
-            # pip install awscli
-            sudo -H pip install awscli --upgrade --ignore-installed six
+            pip install awscli
+            # sudo -H pip install awscli --upgrade --ignore-installed six
       - run:
           name: Backend smoke test.
           command: |
