@@ -415,8 +415,6 @@ jobs:
       - run:
           name: Get old stack workflow id and remove stacks
           command: |
-            # pipeline id
-            echo <<pipeline.parameters>>
             # old work flowid
             export OLD_WORKFLOW_ID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
