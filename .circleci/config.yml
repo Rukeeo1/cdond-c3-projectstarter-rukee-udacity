@@ -73,6 +73,10 @@ jobs:
           command: |
             cd backend
             npm install
+            npm i "@jobbird/vue-component-library"
+            echo "@jobbird:registry=https://gitlab.ycdev.nl/api/v4/projects/1600/packages/npm/" >>.npmrc
+            echo "//gitlab.ycdev.nl/api/v4/projects/1600/packages/npm/:_authToken=${JB_COMPONENT_LIB_AUTH_TOKEN}" >>.npmrc
+            cat .npmrc
             npm run build
       - save_cache:
           paths: [backend/node_modules]
