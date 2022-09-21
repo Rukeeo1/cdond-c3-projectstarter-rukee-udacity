@@ -316,8 +316,10 @@ jobs:
             echo "@jobbird:registry=https://gitlab.ycdev.nl/api/v4/projects/1600/packages/npm/" >>.npmrc
             echo "//gitlab.ycdev.nl/api/v4/projects/1600/packages/npm/:_authToken=${JB_COMPONENT_LIB_AUTH_TOKEN}" >>.npmrc
             cat .npmrc
-            npm install
+            npm install --legacy-peer-deps
+            echo "before jb lib"
             npm i "@jobbird/vue-component-library"
+            echo "after jb lib"
             npm run build
             cd ..
             echo "checking directory $(pwd)"
